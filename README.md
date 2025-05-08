@@ -1,8 +1,7 @@
 # User Search History Service
 
-## `/api/history`
+## `POST /api/history`
 ### Requests
-- Send a `POST` request to `<url>/api/history`
 - Request must contain:
   - `userId`: The user's ID
   - `query`: The search query
@@ -45,9 +44,9 @@ print(response.status_code)   # Prints the status code of the response
 print(response.json()["id"])  # Prints the history entry's ID
 ```
   
-## `/api/history/user/<uuid:userId>`
+## `GET /api/history/user/<uuid:userId>`
 ### Requests
-- Send a `GET` request to `<url>/api/history/user/<uuid:userId>`
+- Request should contain an empty body
 
 ### Response
 - Returns a 200 code and a JSON array of history entries in descending order of timestamp on success
@@ -66,9 +65,9 @@ print(response.status_code)         # Prints the status code of the response
 print(response.json()[0]["query"])  # Prints the most recent entry's query
 ```
 
-## `/api/history/entry/<int:id>`
+## `GET /api/history/entry/<int:id>`
 ### Requests
-- Send a `GET` request to `<url>/api/history/entry/<int:id>`
+- Request should contain an empty body
 
 ### Response
 - Returns a 200 code and a JSON object of the history entry on success
@@ -87,9 +86,9 @@ print(response.status_code)                        # Prints the status code of t
 print(response.json()["responseData"]["results"])  # Prints the results from the history entry
 ```
 
-## `/api/history/entry/<int:id>`
+## `DELETE /api/history/entry/<int:id>`
 ### Requests
-- Send a `DELETE` request to `<url>/api/history/entry/<int:id>`
+- Request should contain an empty body
 
 ### Response
 - Returns a 204 code on success
