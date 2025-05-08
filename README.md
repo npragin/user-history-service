@@ -106,4 +106,6 @@ print(response.status_code)  # Prints the status code of the response
 ```
 
 ## UML Diagram
-![UML Diagram](./assets/uml.png)
+<p align="center">
+  <img src="./assets/uml.png" width="700" alt="UML Diagram">
+</p>
