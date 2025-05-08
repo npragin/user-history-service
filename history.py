@@ -17,11 +17,11 @@ db = SQLAlchemy(app)
 class SearchHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.String(36), nullable=False)
-    query = db.Column(db.String(500), nullable=False)
+    query = db.Column(db.String(3000), nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False)
     result = db.Column(db.JSON, nullable=False)
     parameters = db.Column(db.JSON, nullable=False)
-    notes = db.Column(db.String(500), nullable=False)
+    notes = db.Column(db.String(3000), nullable=False)
     tags = db.Column(db.JSON, nullable=False)
 
     def to_dict(self):
