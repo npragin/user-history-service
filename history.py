@@ -116,14 +116,14 @@ def get_history(user_id):
     return jsonify([entry.to_dict() for entry in entries])
 
 
-@app.route("/api/history/entry/<int:id>", methods=["GET"])
-def get_history_entry(id):
+@app.route("/api/history/entry/<uuid:user_id>/<int:id>", methods=["GET"])
+def get_history_entry(_, id):
     entry = db.session.query(SearchHistory).get_or_404(id)
     return jsonify(entry.to_dict())
 
 
-@app.route("/api/history/entry/<int:id>", methods=["DELETE"])
-def delete_history_entry(id):
+@app.route("/api/history/entry/<uuid:user_id>/<int:id>", methods=["DELETE"])
+def delete_history_entry(_, id):
     entry = db.session.query(SearchHistory).get_or_404(id)
     db.session.delete(entry)
     db.session.commit()
