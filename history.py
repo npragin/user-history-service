@@ -96,29 +96,29 @@ def save_budget():
         return jsonify({"error": f"Error saving budget: {str(e)}"}), 500
 
 
-@app.route("/api/history/user/<uuid:user_id>", methods=["GET"])
-def get_history(user_id):
-    entries = (
-        db.session.query(SearchHistory)
-        .filter_by(user_id=str(user_id))
-        .order_by(SearchHistory.timestamp.desc())
-        .all()
-    )
-    return jsonify([entry.to_dict() for entry in entries])
+@app.route("/api/create-budget", methods=["POST"])
+def create_budget():
+    data = request.get_json()
 
+    # Validate request body
+    required_fields = [
+        "budgetContents",
+    ]
+    if not data or not all(field in data for field in required_fields):
+        missing_fields = [field for field in required_fields if not data.get(field)]
+        return (
+            jsonify({"error": "Missing required fields: " + ", ".join(missing_fields)}),
+            400,
+        )
 
-@app.route("/api/history/entry/<uuid:user_id>/<int:id>", methods=["GET"])
-def get_history_entry(_, id):
-    entry = db.session.query(SearchHistory).get_or_404(id)
-    return jsonify(entry.to_dict())
-
-
-@app.route("/api/history/entry/<uuid:user_id>/<int:id>", methods=["DELETE"])
-def delete_history_entry(_, id):
-    entry = db.session.query(SearchHistory).get_or_404(id)
-    db.session.delete(entry)
-    db.session.commit()
-    return "", 204
+    # Create budget
+    try:
+        budget = Budget.from_dict(data)
+        db.session.add(budget)
+        db.session.commit()
+        return jsonify({"newBudgetID": budget.id}), 200
+    except Exception as e:
+        return jsonify({"error": f"Error creating budget: {str(e)}"}), 500
 
 
 if __name__ == "__main__":
