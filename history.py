@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+import base64
 
 app = Flask(__name__)
 
@@ -17,13 +18,15 @@ class Budget(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
-            "budget_contents": self.budget_contents,
+            "budget_contents": base64.b64encode(self.budget_contents).decode('utf-8'),
         }
 
     @classmethod
     def from_dict(cls, data):
+        # Decode base64 string to bytes
+        budget_contents = base64.b64decode(data["budgetContents"])
         return cls(
-            budget_contents=data["budget_contents"],
+            budget_contents=budget_contents,
         )
 
 
@@ -55,14 +58,15 @@ def swap_budget():
         if not existing_budget:
             return jsonify({"error": f"Budget {data['oldBudgetID']} not found"}), 404
 
-        existing_budget.budget_contents = data["oldBudgetContents"]
+        # Decode base64 string to bytes
+        existing_budget.budget_contents = base64.b64decode(data["oldBudgetContents"])
         db.session.commit()
 
         new_budget = db.session.query(Budget).get(data["newBudgetID"])
         if not new_budget:
             return jsonify({"error": f"Budget {data['newBudgetID']} not found"}), 404
 
-        return jsonify({"newBudgetContents": new_budget.budget_contents}), 200
+        return jsonify({"newBudgetContents": base64.b64encode(new_budget.budget_contents).decode('utf-8')}), 200
     except Exception as e:
         return jsonify({"error": f"Error swapping budget: {str(e)}"}), 500
 
@@ -89,7 +93,8 @@ def save_budget():
         if not budget:
             return jsonify({"error": f"Budget {data['budgetID']} not found"}), 404
 
-        budget.budget_contents = data["budgetContents"]
+        # Decode base64 string to bytes
+        budget.budget_contents = base64.b64decode(data["budgetContents"])
         db.session.commit()
         return jsonify({}), 200
     except Exception as e:
