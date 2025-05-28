@@ -1,123 +1,128 @@
 import requests
 import json
-import uuid
-import os
+import pickle
+import base64
 from datetime import datetime, timezone
 
 BASE_URL = "http://127.0.0.1:5000/api"
 
-
-def clear_screen():
-    os.system("cls" if os.name == "nt" else "clear")
-
-
 def print_separator():
     print("\n" + "=" * 50 + "\n")
 
-
-def create_history_entry():
-    print("Creating a new history entry...")
-
-    # Generate a random UUID for the user
-    user_id = str(uuid.uuid4())
-
-    # Create sample data
-    data = {
-        "userId": user_id,
-        "query": "test query",
-        "parameters": {"param1": "value1", "param2": "value2"},
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "tags": ["test", "demo"],
-        "notes": "This is a test entry",
-        "responseData": {"results": ["result1", "result2"]},
+def demonstrate_create_budget():
+    """Demonstrate creating a new budget"""
+    print("Demonstrating budget creation...")
+    
+    # Sample budget data
+    budget_data = {
+        "name": "Monthly Budget",
+        "amount": 5000,
+        "categories": ["groceries", "utilities", "entertainment"],
+        "created_at": datetime.now(timezone.utc).isoformat()
     }
-
-    print("\nRequest Data:")
-    print(json.dumps(data, indent=2))
-
-    response = requests.post(f"{BASE_URL}/history", json=data)
+    
+    print("\nCreating budget with data:")
+    print(json.dumps(budget_data, indent=2))
+    
+    # Pickle and base64 encode the budget data
+    pickled_data = pickle.dumps(budget_data)
+    encoded_data = base64.b64encode(pickled_data).decode('utf-8')
+    
+    response = requests.post(
+        f"{BASE_URL}/create-budget",
+        json={"budgetContents": encoded_data}
+    )
+    
     print(f"\nResponse Status: {response.status_code}")
     print(f"Response Body: {json.dumps(response.json(), indent=2)}")
-    return user_id, response.json().get("id")
+    return response.json().get("newBudgetID")
 
-
-def get_user_history(user_id):
-    print(f"\nRetrieving history for user {user_id}...")
-    print(f"\nRequest URL: {BASE_URL}/history/user/{user_id}")
-
-    response = requests.get(f"{BASE_URL}/history/user/{user_id}")
-    print(f"\nResponse Status: {response.status_code}")
-    if response.status_code != 404:
-        print(f"Response Body: {json.dumps(response.json(), indent=2)}")
-
-
-def get_specific_entry(entry_id):
-    print(f"\nRetrieving specific entry {entry_id}...")
-    print(f"\nRequest URL: {BASE_URL}/history/entry/{entry_id}")
-
-    response = requests.get(f"{BASE_URL}/history/entry/{entry_id}")
+def demonstrate_save_budget(budget_id):
+    """Demonstrate saving an existing budget"""
+    print("\nDemonstrating budget save...")
+    
+    # Modified budget data
+    updated_data = {
+        "name": "Updated Monthly Budget",
+        "amount": 6000,
+        "categories": ["groceries", "utilities", "entertainment", "savings"],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    print(f"\nSaving budget {budget_id} with updated data:")
+    print(json.dumps(updated_data, indent=2))
+    
+    # Pickle and base64 encode the updated data
+    pickled_data = pickle.dumps(updated_data)
+    encoded_data = base64.b64encode(pickled_data).decode('utf-8')
+    
+    response = requests.post(
+        f"{BASE_URL}/save-budget",
+        json={
+            "budgetID": budget_id,
+            "budgetContents": encoded_data
+        }
+    )
+    
     print(f"\nResponse Status: {response.status_code}")
     print(f"Response Body: {json.dumps(response.json(), indent=2)}")
 
-
-def delete_entry(entry_id):
-    print(f"\nDeleting entry {entry_id}...")
-    print(f"\nRequest URL: {BASE_URL}/history/entry/{entry_id}")
-
-    response = requests.delete(f"{BASE_URL}/history/entry/{entry_id}")
+def demonstrate_swap_budget(budget1_id):
+    """Demonstrate swapping budgets"""
+    print("\nDemonstrating budget swap...")
+    
+    # Create a second budget
+    budget2_data = {
+        "name": "Alternative Budget",
+        "amount": 4000,
+        "categories": ["rent", "transport", "dining"],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    print("\nCreating second budget:")
+    print(json.dumps(budget2_data, indent=2))
+    
+    # Pickle and base64 encode the second budget data
+    pickled_data = pickle.dumps(budget2_data)
+    encoded_data = base64.b64encode(pickled_data).decode('utf-8')
+    
+    response = requests.post(
+        f"{BASE_URL}/create-budget",
+        json={"budgetContents": encoded_data}
+    )
+    budget2_id = response.json().get("newBudgetID")
+    
+    print(f"\nSwapping budgets {budget1_id} and {budget2_id}")
+    response = requests.post(
+        f"{BASE_URL}/swap-budget",
+        json={
+            "oldBudgetID": budget1_id,
+            "newBudgetID": budget2_id,
+            "oldBudgetContents": encoded_data
+        }
+    )
+    
     print(f"\nResponse Status: {response.status_code}")
-
+    print(f"Response Body: {json.dumps(response.json(), indent=2)}")
 
 def main():
-    while True:
-        clear_screen()
-        print("History Service Test Program")
-        print("This program will demonstrate the functionality of the history service.")
-        print("Make sure the history service is running on http://127.0.0.1:5000")
-        print("\nOptions:")
-        print("1. Create new history entry")
-        print("2. Get user history")
-        print("3. Get specific entry")
-        print("4. Delete entry")
-        print("5. Exit")
-
-        choice = input("\nEnter your choice (1-5): ")
-
-        if choice == "1":
-            clear_screen()
-            input("Press Enter to create a new history entry...")
-            user_id, entry_id = create_history_entry()
-            input("\nPress Enter to continue...")
-
-        elif choice == "2":
-            clear_screen()
-            user_id = input("Enter user ID: ")
-            input("Press Enter to retrieve the user's history...")
-            get_user_history(user_id)
-            input("\nPress Enter to continue...")
-
-        elif choice == "3":
-            clear_screen()
-            entry_id = input("Enter entry ID: ")
-            input("Press Enter to retrieve the specific entry...")
-            get_specific_entry(entry_id)
-            input("\nPress Enter to continue...")
-
-        elif choice == "4":
-            clear_screen()
-            entry_id = input("Enter entry ID: ")
-            input("Press Enter to delete the entry...")
-            delete_entry(entry_id)
-            input("\nPress Enter to continue...")
-
-        elif choice == "5":
-            print("\nExiting program...")
-            break
-
-        else:
-            print("\nInvalid choice. Please try again.")
-            input("Press Enter to continue...")
-
+    print("Budget Service Demonstration")
+    print("This program demonstrates the three main endpoints of the budget service.")
+    print("Make sure the budget service is running on http://127.0.0.1:5000")
+    
+    print_separator()
+    
+    # Demonstrate all three endpoints
+    budget_id = demonstrate_create_budget()
+    print_separator()
+    
+    demonstrate_save_budget(budget_id)
+    print_separator()
+    
+    demonstrate_swap_budget(budget_id)
+    print_separator()
+    
+    print("Demonstration complete!")
 
 if __name__ == "__main__":
     main()
