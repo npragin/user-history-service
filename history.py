@@ -1,9 +1,5 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-import datetime
-from datetime import datetime as dt
-from dateutil import parser
-import uuid
 
 app = Flask(__name__)
 
@@ -13,40 +9,21 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 
-# Define the Search History model
-class SearchHistory(db.Model):
+# Define the Budget model
+class Budget(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.String(36), nullable=False)
-    query = db.Column(db.String(3000), nullable=False)
-    timestamp = db.Column(db.DateTime, nullable=False)
-    result = db.Column(db.JSON, nullable=False)
-    parameters = db.Column(db.JSON, nullable=False)
-    notes = db.Column(db.String(3000), nullable=False)
-    tags = db.Column(db.JSON, nullable=False)
+    budget_contents = db.Column(db.LargeBinary, nullable=False)
 
     def to_dict(self):
         return {
             "id": self.id,
-            "user_id": self.user_id,
-            "query": self.query,
-            "timestamp": self.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z",
-            "result": self.result,
-            "parameters": self.parameters,
-            "note": self.notes,
-            "tags": self.tags,
+            "budget_contents": self.budget_contents,
         }
 
     @classmethod
     def from_dict(cls, data):
-        timestamp = parser.parse(data["timestamp"])
         return cls(
-            user_id=data["userId"],
-            query=data["query"],
-            timestamp=timestamp,
-            result=data["responseData"]["results"],
-            parameters=data["parameters"],
-            notes=data["notes"],
-            tags=data["tags"],
+            budget_contents=data["budget_contents"],
         )
 
 
