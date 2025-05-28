@@ -32,19 +32,15 @@ with app.app_context():
     db.create_all()
 
 
-@app.route("/api/history", methods=["POST"])
-def create_history():
+@app.route("/api/swap-budget", methods=["POST"])
+def swap_budget():
     data = request.get_json()
 
-    # Check if the request body contains required fields
+    # Validate request body
     required_fields = [
-        "userId",
-        "query",
-        "parameters",
-        "timestamp",
-        "tags",
-        "notes",
-        "responseData",
+        "oldBudgetID",
+        "newBudgetID",
+        "oldBudgetContents",
     ]
     if not data or not all(field in data for field in required_fields):
         missing_fields = [field for field in required_fields if field not in data]
@@ -53,20 +49,24 @@ def create_history():
             400,
         )
 
-    if "results" not in data["responseData"]:
-        return jsonify({"error": "Missing required field: results"}), 400
-
-    # Validate UUID format
+    # Update existing budget content
     try:
-        uuid.UUID(data["userId"])
-    except ValueError:
-        return jsonify({"error": "Invalid UUID format for userId"}), 400
+        existing_budget = db.session.query(Budget).get(data["oldBudgetID"])
+        if not existing_budget:
+            return jsonify({"error": f"Budget {data['oldBudgetID']} not found"}), 404
 
-    # Add the entry to the database
-    try:
-        new_entry = SearchHistory.from_dict(data)
-        db.session.add(new_entry)
+        existing_budget.budget_contents = data["oldBudgetContents"]
         db.session.commit()
+
+        new_budget = db.session.query(Budget).get(data["newBudgetID"])
+        if not new_budget:
+            return jsonify({"error": f"Budget {data['newBudgetID']} not found"}), 404
+
+        return jsonify({"newBudgetContents": new_budget.budget_contents}), 200
+    except Exception as e:
+        return jsonify({"error": f"Error swapping budget: {str(e)}"}), 500
+
+
         return (
             jsonify(
                 {
