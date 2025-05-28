@@ -67,19 +67,33 @@ def swap_budget():
         return jsonify({"error": f"Error swapping budget: {str(e)}"}), 500
 
 
+@app.route("/api/save-budget", methods=["POST"])
+def save_budget():
+    data = request.get_json()
+
+    # Validate request body
+    required_fields = [
+        "budgetID",
+        "budgetContents",
+    ]
+    if not data or not all(field in data for field in required_fields):
+        missing_fields = [field for field in required_fields if not data.get(field)]
         return (
-            jsonify(
-                {
-                    "id": new_entry.id,
-                    "status": "success",
-                    "message": "Search history recorded successfully",
-                    "timestamp": dt.now(datetime.UTC).isoformat()[:-3] + "Z",
-                }
-            ),
-            201,
+            jsonify({"error": "Missing required fields: " + ", ".join(missing_fields)}),
+            400,
         )
-    except ValueError as e:
-        return jsonify({"error": f"Invalid timestamp format: {str(e)}"}), 400
+
+    # Save budget
+    try:
+        budget = db.session.query(Budget).get(data["budgetID"])
+        if not budget:
+            return jsonify({"error": f"Budget {data['budgetID']} not found"}), 404
+
+        budget.budget_contents = data["budgetContents"]
+        db.session.commit()
+        return jsonify({}), 200
+    except Exception as e:
+        return jsonify({"error": f"Error saving budget: {str(e)}"}), 500
 
 
 @app.route("/api/history/user/<uuid:user_id>", methods=["GET"])
