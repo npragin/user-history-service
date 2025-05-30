@@ -34,6 +34,11 @@ class Budget(db.Model):
 with app.app_context():
     db.create_all()
 
+@app.route("/api/get-all-budget-ids", methods=["GET"])
+def get_all_budget_ids():
+    budget_ids = db.session.query(Budget.id).all()
+    return jsonify({"budgetIDs": [budget_id[0] for budget_id in budget_ids]}), 200
+
 
 @app.route("/api/swap-budget", methods=["POST"])
 def swap_budget():
