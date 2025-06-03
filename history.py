@@ -20,7 +20,7 @@ class Budget(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
-            "budget_contents": base64.b64encode(self.budget_contents).decode('utf-8'),
+            "budget_contents": base64.b64encode(self.budget_contents).decode("utf-8"),
         }
 
     @classmethod
@@ -35,6 +35,7 @@ class Budget(db.Model):
 # Create database tables
 with app.app_context():
     db.create_all()
+
 
 @app.route("/api/get-all-budget-ids", methods=["GET"])
 def get_all_budget_ids():
@@ -73,7 +74,16 @@ def swap_budget():
         if not new_budget:
             return jsonify({"error": f"Budget {data['newBudgetID']} not found"}), 404
 
-        return jsonify({"newBudgetContents": base64.b64encode(new_budget.budget_contents).decode('utf-8')}), 200
+        return (
+            jsonify(
+                {
+                    "newBudgetContents": base64.b64encode(
+                        new_budget.budget_contents
+                    ).decode("utf-8")
+                }
+            ),
+            200,
+        )
     except Exception as e:
         return jsonify({"error": f"Error swapping budget: {str(e)}"}), 500
 
@@ -132,6 +142,7 @@ def create_budget():
     except Exception as e:
         return jsonify({"error": f"Error creating budget: {str(e)}"}), 500
 
+
 @app.route("/api/delete-budget/<int:budget_id>", methods=["DELETE"])
 def delete_budget(budget_id):
     try:
@@ -144,6 +155,7 @@ def delete_budget(budget_id):
         return jsonify({"message": f"Budget {budget_id} deleted successfully"}), 200
     except Exception as e:
         return jsonify({"error": f"Error deleting budget: {str(e)}"}), 500
+
 
 @app.route("/api/load-budget/<budget_id>", methods=["GET"])
 def load_budget(budget_id):
