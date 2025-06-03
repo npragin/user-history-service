@@ -145,6 +145,19 @@ def delete_budget(budget_id):
     except Exception as e:
         return jsonify({"error": f"Error deleting budget: {str(e)}"}), 500
 
+@app.route("/api/load-budget/<budget_id>", methods=["GET"])
+def load_budget(budget_id):
+    try:
+        budget = db.session.query(Budget).get(budget_id)
+        if not budget:
+            return jsonify({"error": f"Budget {budget_id} not found"}), 404
+
+        encoded = base64.b64encode(budget.budget_contents).decode("utf-8")
+        return jsonify({"budgetContents": encoded}), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Error loading budget: {str(e)}"}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True)
