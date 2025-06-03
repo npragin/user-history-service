@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 import base64
 
 app = Flask(__name__)
+CORS(app)
 
 # Configure SQLite database
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///history.db"
