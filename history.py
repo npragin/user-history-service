@@ -132,6 +132,19 @@ def create_budget():
     except Exception as e:
         return jsonify({"error": f"Error creating budget: {str(e)}"}), 500
 
+@app.route("/api/delete-budget/<int:budget_id>", methods=["DELETE"])
+def delete_budget(budget_id):
+    try:
+        budget = Budget.query.get(budget_id)
+        if not budget:
+            return jsonify({"error": f"Budget {budget_id} not found"}), 404
+
+        db.session.delete(budget)
+        db.session.commit()
+        return jsonify({"message": f"Budget {budget_id} deleted successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": f"Error deleting budget: {str(e)}"}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True)
